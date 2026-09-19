@@ -30,18 +30,33 @@ async function preparePermissions(){
   $("#analysisStage").classList.add("hidden");
 }
 
-$("#startPermissionsBtn").addEventListener("click", async ()=>{
+async function openCameraForReport(){
   try{
-    // CAMERA permission is requested here, on the citizen's camera action.
-    // MICROPHONE permission is intentionally requested later, when the voice step begins.
-    // The browser/OS controls first-use permission prompts and they cannot be bypassed.
+    // Camera access is requested only from a citizen action. On a retake, the browser
+    // normally reuses the permission already granted for this site.
     const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
     state.stream=stream;
     $("#cameraVideo").srcObject=stream;
     $("#permissionCard").classList.add("hidden");
+    $("#analysisStage").classList.add("hidden");
+    $("#processingPanel").classList.add("hidden");
+    $("#voiceStage").classList.add("hidden");
     $("#cameraStage").classList.remove("hidden");
     captureLocation().catch(()=>toast("Allow location once to attach GPS automatically."));
   }catch(e){toast(`Camera permission error: ${e.message}`)}
+}
+
+$("#startPermissionsBtn").addEventListener("click", openCameraForReport);
+
+$("#retakePhotoBtn").addEventListener("click", async ()=>{
+  state.evidenceToken=null;state.redactions={};state.audioBlob=null;state.recorder=null;state.transcript="";state.analysis=null;
+  $("#retakePhotoBtn").classList.add("hidden");
+  $("#submitBtn").classList.remove("hidden");
+  $("#submitBtn").disabled=true;
+  $("#editText").classList.remove("hidden");
+  $("#editText").value="";
+  $("#submitResult").innerHTML="";
+  await openCameraForReport();
 });
 
 async function captureLocation(){
@@ -59,13 +74,6 @@ async function captureLocation(){
     },reject,{enableHighAccuracy:true,timeout:15000,maximumAge:30000});
   });
 }
-
-$("#uploadFallbackBtn").addEventListener("click",()=>$("#fallbackFile").click());
-$("#fallbackFile").addEventListener("change",async()=>{
-  const file=$("#fallbackFile").files?.[0];if(!file)return;
-  try{await captureLocation()}catch(e){toast("Location permission was not granted. You can continue, but GPS will be missing.")}
-  await processPhoto(file);
-});
 
 $("#captureBtn").addEventListener("click",async()=>{
   const v=$("#cameraVideo");
@@ -122,8 +130,11 @@ async function processPhoto(file){
       const pct=Math.round((Number(verify.photo_gate?.confidence)||0)*100);
       $("#aiSummary").textContent=`${verify.photo_gate?.reason||"No clear infrastructure issue detected."} Confidence: ${pct}%. Please take another clear photo of the actual issue.`;
       $("#aiSource").textContent=verify.photo_analysis?.available?"Strict pre-voice photo verification":"Live vision unavailable — complaint blocked";
+      $("#editText").classList.add("hidden");
       $("#submitBtn").disabled=true;
-      toast("Photo not verified — microphone was not started.");
+      $("#submitBtn").classList.add("hidden");
+      $("#retakePhotoBtn").classList.remove("hidden");
+      toast("Photo not verified — please retake the photo.");
       return;
     }
 
@@ -272,8 +283,11 @@ async function analyzeText(text,sourceNote=""){
       const pct=Math.round((Number(r.photo_gate.confidence)||0)*100);
       $("#aiSummary").textContent=`${r.photo_gate.reason||"No clear infrastructure issue detected."} Confidence: ${pct}%. Please take another clear photo of the actual issue.`;
       $("#aiSource").textContent="Strict photo verification";
+      $("#editText").classList.add("hidden");
       $("#submitBtn").disabled=true;
-      toast("Photo rejected — take a clear photo of the actual infrastructure issue.");
+      $("#submitBtn").classList.add("hidden");
+      $("#retakePhotoBtn").classList.remove("hidden");
+      toast("Photo rejected — please retake a clear photo of the actual issue.");
       return;
     }
     state.analysis=r.analysis;
@@ -288,6 +302,9 @@ async function analyzeText(text,sourceNote=""){
 function renderAnalysis(a,source){
   $("#aiIssue").textContent=a.issue_type;$("#aiSeverity").textContent=a.severity;$("#aiDepartment").textContent=a.department;
   $("#aiSummary").textContent=a.summary;$("#aiSource").textContent=source||a.ai_source;
+  $("#editText").classList.remove("hidden");
+  $("#retakePhotoBtn").classList.add("hidden");
+  $("#submitBtn").classList.remove("hidden");
   $("#submitBtn").disabled=false;
 }
 $("#editText").addEventListener("change",async()=>{

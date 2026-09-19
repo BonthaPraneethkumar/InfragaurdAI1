@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#087fe6">
+<title>InfraGuard AI</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<div id="app">
+  <section class="screen active" id="homeScreen">
+    <header class="homeHero">
+      <div class="statusMock"><span>9:41</span><span>▮▮▮ ⌁ ▰</span></div>
+      <div class="brandRow">
+        <img src="/static/assets/infraguard_logo.png" alt="InfraGuard AI logo">
+        <div><div class="brandTitle">InfraGuard <span>AI</span></div><div class="tagline">Smarter Cities. Safer Communities.</div></div>
+        <button class="bell" data-go="notifications">♧<i></i></button>
+      </div>
+      <div class="welcome">
+        <span>Hello,</span>
+        <strong>Let’s make your city<br>better together!</strong>
+      </div>
+    </header>
+
+    <main class="homeBody">
+      <button class="reportBanner" id="reportIssueBtn">
+        <span class="cameraIcon">📷</span>
+        <span class="reportText"><b>Report an Issue</b><small>Click a photo, add a voice or describe the issue</small></span>
+        <span class="arrow">→</span>
+      </button>
+
+      <div class="sectionHead"><h2>Recent Reports</h2><button data-go="myreports">View All ›</button></div>
+      <div class="recentList">
+        <article><img src="/static/assets/traffic.jpg"><div><b>🚗 &nbsp;Traffic</b><small>📍 Near Commerzone, Pune</small><em class="resolved">Issue Resolved</em></div><span><i>›</i><small>1 hour ago</small></span></article>
+        <article><img src="/static/assets/garbage.jpg"><div><b>🗑️ &nbsp;Garbage Waste</b><small>📍 Viman Nagar, Pune</small><em class="resolved">Issue Resolved</em></div><span><i>›</i><small>15 minutes ago</small></span></article>
+        <article><img src="/static/assets/streetlight.jpg"><div><b>💡 &nbsp;Streetlight</b><small>📍 Hitech City, Hyderabad.</small><em class="progress">In Progress</em></div><span><i>›</i><small>15 minutes ago</small></span></article>
+        <article><img src="/static/assets/pothole.jpg"><div><b>🛣️ &nbsp;Road Pathole</b><small>📍 Tambaram, Chennai</small><em class="resolved">Issue Resolved</em></div><span><i>›</i><small>22 minutes ago</small></span></article>
+        <article><img src="/static/assets/water.jpg"><div><b>💧 &nbsp;Water Leaks</b><small>📍 Bengaluru, Karnataka</small><em class="registered">Complaint Registered</em></div><span><i>›</i><small>2 minutes ago</small></span></article>
+        <article><img src="/static/assets/electric.jpg"><div><b>⚡ &nbsp;Electric Wires</b><small>📍 Noida, Uttarpradesh</small><em class="progress">In Progress</em></div><span><i>›</i><small>2 days ago</small></span></article>
+        <article><img src="/static/assets/trees.jpg"><div><b>🌳 &nbsp;Cut down trees on road</b><small>📍 Kolkata, West Bengal</small><em class="unresolved">Unresolved</em><small class="comment">💬 Comment: It is not public area.</small></div><span><i>›</i><small>12 days ago</small></span></article>
+      </div>
+    </main>
+  </section>
+
+  <section class="screen" id="captureScreen">
+    <header class="simpleHeader"><button data-go="home">←</button><div><b>Report an Issue</b><small>Photo → Location → Voice → AI</small></div></header>
+    <main class="capturePage">
+      <div class="permissionCard" id="permissionCard">
+        <img src="/static/assets/infraguard_logo.png">
+        <h2>Ready to report?</h2>
+        <p>InfraGuard first asks for camera and location. After the photo is protected, the browser asks for microphone permission when the voice step begins. After first approval, permissions follow your browser settings.</p>
+        <button class="primary" id="startPermissionsBtn">Allow Camera & Location</button>
+        <button class="secondary" id="uploadFallbackBtn">Use an Existing Photo Instead</button>
+        <input type="file" id="fallbackFile" accept="image/*" hidden>
+      </div>
+
+      <div class="cameraStage hidden" id="cameraStage">
+        <video id="cameraVideo" autoplay playsinline muted></video>
+        <div class="cameraOverlay"><span id="locationChip">📍 Detecting location…</span><span>🔐 Privacy protection on</span></div>
+        <button id="captureBtn" class="shutter" aria-label="Take photo"><span></span></button>
+        <small class="captureHint">Take a clear photo of the infrastructure problem</small>
+      </div>
+
+      <div class="processing hidden" id="processingPanel">
+        <div class="spinner"></div><h2 id="processingTitle">Protecting your photo…</h2><p id="processingText">Strict privacy mode hides detected faces, people, license plates, QR codes and text-like regions, then verifies the protected photo again.</p>
+      </div>
+
+      <div class="voiceStage hidden" id="voiceStage">
+        <div class="evidenceWrap"><img id="redactedPreview" alt="Privacy-protected evidence"><span id="redactionBadge">Privacy protected</span></div>
+        <div class="locationBox"><small>Automatically attached location</small><b id="locationText">GPS captured</b></div>
+        <div class="voiceCircle" id="voiceCircle"><span>🎙️</span></div>
+        <h2 id="voiceTitle">Listening…</h2>
+        <p id="voiceTimer">Speak in Telugu, Hindi, English or another supported Indian language · 00:20</p>
+        <button class="secondary" id="stopVoiceBtn">Finish Voice</button>
+      </div>
+
+      <div class="analysisStage hidden" id="analysisStage">
+        <div class="evidenceWrap small"><img id="finalEvidence" alt="Privacy-protected evidence"></div>
+        <div class="transcriptCard"><small>English text from your voice</small><p id="englishTranscript"></p></div>
+        <div class="aiCard">
+          <div class="aiHeader"><span>✦</span><div><b>InfraGuard AI Analysis</b><small id="aiSource">Analyzing complaint…</small></div></div>
+          <div class="aiGrid">
+            <div><small>Issue</small><b id="aiIssue">—</b></div>
+            <div><small>Severity</small><b id="aiSeverity">—</b></div>
+            <div><small>Department</small><b id="aiDepartment">—</b></div>
+            <div><small>Photo Confidence</small><b id="aiPhotoConfidence">—</b></div>
+            <div><small>Affected Visual Area</small><b id="aiAffectedArea">—</b></div>
+          </div>
+          <p id="aiSummary"></p>
+          <p id="aiPhotoObservation" style="font-size:11px;color:#6b87a4"></p>
+        </div>
+        <textarea id="editText" placeholder="You can correct the English complaint before submitting."></textarea>
+        <button class="primary full" id="submitBtn" disabled>Submit Complaint</button>
+        <div id="submitResult"></div>
+      </div>
+    </main>
+  </section>
+
+  <section class="screen" id="myreportsScreen">
+    <header class="simpleHeader"><button data-go="home">←</button><div><b>My Reports</b><small>Track your complaints</small></div></header>
+    <main class="genericPage"><div id="myReportsList" class="caseList"></div></main>
+  </section>
+
+  <section class="screen" id="notificationsScreen">
+    <header class="simpleHeader"><button data-go="home">←</button><div><b>Notifications</b><small>Case updates</small></div></header>
+    <main class="genericPage"><div id="notificationList" class="caseList"></div></main>
+  </section>
+
+  <section class="screen" id="profileScreen">
+    <header class="simpleHeader"><button data-go="home">←</button><div><b>Profile</b><small>Citizen account</small></div></header>
+    <main class="genericPage">
+      <div class="profileCard"><img src="/static/assets/infraguard_logo.png"><h2>InfraGuard Citizen</h2><p>✓ Identity verified for demo</p><div class="profileRows"><span>Mobile / Email <b>Verified</b></span><span>Location permission <b id="profileLocation">Check on report</b></span><span>Privacy mode <b>Automatic redaction</b></span></div></div>
+      <button class="officerLink" data-go="officer">Open Government Officer Console →</button>
+    </main>
+  </section>
+
+  <section class="screen" id="officerScreen">
+    <header class="officerHeader"><button data-go="profile">←</button><div><b>InfraGuard AI</b><small>Department Command Center</small></div><button data-go="analytics">Analytics</button></header>
+    <main class="officerPage"><div class="officerStats" id="officerStats"></div><div id="officerList"></div></main>
+  </section>
+
+  <section class="screen" id="analyticsScreen">
+    <header class="officerHeader"><button data-go="officer">←</button><div><b>City Operations</b><small>Analytics</small></div><span></span></header>
+    <main class="officerPage"><div class="analyticsCards" id="analyticsCards"></div><div class="analyticsPanel"><h3>Department workload</h3><div id="departmentBars"></div></div></main>
+  </section>
+
+  <nav class="bottomNav" id="bottomNav">
+    <button class="active" data-go="home"><span>⌂</span>Home</button>
+    <button data-go="myreports"><span>▤</span>My Reports</button>
+    <button class="plus" id="navReportBtn"><span>＋</span></button>
+    <button data-go="notifications"><span>♧</span>Notifications</button>
+    <button data-go="profile"><span>♙</span>Profile</button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
